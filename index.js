@@ -34,6 +34,11 @@ async function run() {
         const db = client.db('paws-nest');
         const petCollection = db.collection('pets')
 
+        app.get('/pet', async (req, res) => {
+            const result = await petCollection.find().toArray();
+            res.send(result)
+        })
+
         app.post('/pet', async (req, res) => {
             const newPetData = req.body;
             const result = await petCollection.insertOne(newPetData);
