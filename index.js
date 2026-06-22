@@ -30,7 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         await client.connect();
-        
+
         const db = client.db('paws-nest');
         const petCollection = db.collection('pets')
         const adaptedPetCollection = db.collection('adapted-pets')
@@ -41,12 +41,16 @@ async function run() {
         })
 
         app.get('/pet/:id', async (req, res) => {
-            const {id} = req.params;
-            const result = await petCollection.findOne({_id: new ObjectId(id)})
+            const { id } = req.params;
+            const result = await petCollection.findOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
-        
+        app.get('/pet/email/:email', async (req, res) => {
+            const { email } = req.params;
+            const result = await petCollection.find({ ownerEmail: email }).toArray()
+            res.send(result)
+        })
 
         app.post('/pet', async (req, res) => {
             const newPetData = req.body;
@@ -54,9 +58,14 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/adapted-pet', async(req, res) => {
+        app.post('/adapted-pet', async (req, res) => {
             const newAdaptedPetData = req.body;
             const result = await adaptedPetCollection.insertOne(newAdaptedPetData);
+            res.send(result)
+        })
+
+        app.get('/adapted-pet', async (req, res) => {
+            const result = await adaptedPetCollection.find().toArray();
             res.send(result)
         })
 
