@@ -85,6 +85,12 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/adapted-pet/:id', async (req, res) => {
+            const {id} = req.params;
+            const result = await adaptedPetCollection.find({ petId : id}).toArray()
+            res.send(result)
+        })
+
 
 
         await client.db("admin").command({ ping: 1 });
