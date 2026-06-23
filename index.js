@@ -74,22 +74,40 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/adapted-pet', async (req, res) => {
-            const newAdaptedPetData = req.body;
-            const result = await adaptedPetCollection.insertOne(newAdaptedPetData);
-            res.send(result)
-        })
-
         app.get('/adapted-pet', async (req, res) => {
             const result = await adaptedPetCollection.find().toArray();
             res.send(result)
         })
 
         app.get('/adapted-pet/:id', async (req, res) => {
-            const {id} = req.params;
-            const result = await adaptedPetCollection.find({ petId : id}).toArray()
+            const { id } = req.params;
+            const result = await adaptedPetCollection.find({ petId: id }).toArray()
             res.send(result)
         })
+
+        app.patch('/adapted-pet/:id', async(req, res) => {
+            const {id} = req.params;
+            const {status} = req.body;
+            const result = await adaptedPetCollection.updateOne(
+                {_id: new ObjectId(id)},
+                {$set: {status : status}}
+            );
+            res.send(result)
+        })
+
+        app.get('/adapted-pet/email/:email', async (req, res) => {
+            const {email} = req.params;
+            const result = await adaptedPetCollection.find({ adapterEmail : email}).toArray()
+            res.send(result)
+        })
+
+        app.post('/adapted-pet', async (req, res) => {
+            const newAdaptedPetData = req.body;
+            const result = await adaptedPetCollection.insertOne(newAdaptedPetData);
+            res.send(result)
+        })
+
+       
 
 
 
