@@ -56,6 +56,12 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/pet/:id', async (req, res) => {
+            const {id} = req.params;
+            const result = await petCollection.deleteOne({_id: new ObjectId(id)})
+            res.send(result)
+        })
+
         app.get('/pet/email/:email', async (req, res) => {
             const { email } = req.params;
             const result = await petCollection.find({ ownerEmail: email }).toArray()
