@@ -35,8 +35,20 @@ async function run() {
         const petCollection = db.collection('pets')
         const adaptedPetCollection = db.collection('adapted-pets')
 
+        //all-pets get api and implement searching and filtering
         app.get('/pet', async (req, res) => {
-            const result = await petCollection.find().toArray();
+            const { search, species } = req.query;
+            const query = {};
+
+            if (search) {
+                query.petName = { $regex: search, $options: 'i' }
+            }
+
+            if(species){
+                const speciesArray = species.split(',');
+                query.species ={$in: speciesArray}
+            }
+            const result = await petCollection.find(query).toArray();
             res.send(result)
         })
 
@@ -47,18 +59,18 @@ async function run() {
         })
 
         app.patch('/pet/:id', async (req, res) => {
-            const {id} = req.params;
+            const { id } = req.params;
             const updatedPetData = req.body;
             const result = await petCollection.updateOne(
-                {_id: new ObjectId(id)},
-                {$set: updatedPetData}
+                { _id: new ObjectId(id) },
+                { $set: updatedPetData }
             )
             res.send(result)
         })
 
         app.delete('/pet/:id', async (req, res) => {
-            const {id} = req.params;
-            const result = await petCollection.deleteOne({_id: new ObjectId(id)})
+            const { id } = req.params;
+            const result = await petCollection.deleteOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
@@ -85,25 +97,25 @@ async function run() {
             res.send(result)
         })
 
-        app.patch('/adapted-pet/:id', async(req, res) => {
-            const {id} = req.params;
-            const {status} = req.body;
+        app.patch('/adapted-pet/:id', async (req, res) => {
+            const { id } = req.params;
+            const { status } = req.body;
             const result = await adaptedPetCollection.updateOne(
-                {_id: new ObjectId(id)},
-                {$set: {status : status}}
+                { _id: new ObjectId(id) },
+                { $set: { status: status } }
             );
             res.send(result)
         })
 
         app.get('/adapted-pet/email/:email', async (req, res) => {
-            const {email} = req.params;
-            const result = await adaptedPetCollection.find({ adapterEmail : email}).toArray()
+            const { email } = req.params;
+            const result = await adaptedPetCollection.find({ adapterEmail: email }).toArray()
             res.send(result)
         })
 
         app.delete('/adapted-pet/:id', async (req, res) => {
-            const {id} = req.params;
-            const result = await adaptedPetCollection.deleteOne({_id: new ObjectId(id)})
+            const { id } = req.params;
+            const result = await adaptedPetCollection.deleteOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
@@ -113,7 +125,7 @@ async function run() {
             res.send(result)
         })
 
-       
+
 
 
 
