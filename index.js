@@ -101,6 +101,12 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/adapted-pet/:id', async (req, res) => {
+            const {id} = req.params;
+            const result = await adaptedPetCollection.deleteOne({_id: new ObjectId(id)})
+            res.send(result)
+        })
+
         app.post('/adapted-pet', async (req, res) => {
             const newAdaptedPetData = req.body;
             const result = await adaptedPetCollection.insertOne(newAdaptedPetData);
