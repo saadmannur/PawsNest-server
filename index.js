@@ -13,6 +13,7 @@ dotenv.config()
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 const uri = process.env.MONGODB_URI;
 
 
@@ -26,6 +27,32 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+
+const JWKS = createRemoteJWKSet(
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+)
+
+// middleware function
+const verifyToken = async (req, res, next) => {
+    const authHeader = req?.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized" })
+    }
+
+    const token = authHeader.split(" ")[1]
+    if (!token) {
+        return res.status(401).send({ message: "Unauthorized" })
+    }
+    
+    try {
+        const { payload } = await jwtVerify(token, JWKS)
+        console.log(payload); //check
+        next()
+    }
+    catch (error) {
+        res.status(403).send({ message: "Forbidden" })
+    }
+}
 
 async function run() {
     try {
@@ -52,13 +79,13 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/pet/:id', async (req, res) => {
+        app.get('/pet/:id', verifyToken,  async (req, res) => {
             const { id } = req.params;
             const result = await petCollection.findOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
-        app.patch('/pet/:id', async (req, res) => {
+        app.patch('/pet/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const updatedPetData = req.body;
             const result = await petCollection.updateOne(
@@ -68,36 +95,36 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/pet/:id', async (req, res) => {
+        app.delete('/pet/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const result = await petCollection.deleteOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
-        app.get('/pet/email/:email', async (req, res) => {
+        app.get('/pet/email/:email', verifyToken, async (req, res) => {
             const { email } = req.params;
             const result = await petCollection.find({ ownerEmail: email }).toArray()
             res.send(result)
         })
 
-        app.post('/pet', async (req, res) => {
+        app.post('/pet', verifyToken, async (req, res) => {
             const newPetData = req.body;
             const result = await petCollection.insertOne(newPetData);
             res.send(result)
         })
 
-        app.get('/adapted-pet', async (req, res) => {
+        app.get('/adapted-pet', async (req, res) => {         //we are not using this api
             const result = await adaptedPetCollection.find().toArray();
             res.send(result)
         })
 
-        app.get('/adapted-pet/:id', async (req, res) => {
+        app.get('/adapted-pet/:id', verifyToken,  async (req, res) => {
             const { id } = req.params;
             const result = await adaptedPetCollection.find({ petId: id }).toArray()
             res.send(result)
         })
 
-        app.patch('/adapted-pet/:id', async (req, res) => {
+        app.patch('/adapted-pet/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const { status } = req.body;
             const result = await adaptedPetCollection.updateOne(
@@ -107,19 +134,19 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/adapted-pet/email/:email', async (req, res) => {
+        app.get('/adapted-pet/email/:email', verifyToken, async (req, res) => {
             const { email } = req.params;
             const result = await adaptedPetCollection.find({ adapterEmail: email }).toArray()
             res.send(result)
         })
 
-        app.delete('/adapted-pet/:id', async (req, res) => {
+        app.delete('/adapted-pet/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const result = await adaptedPetCollection.deleteOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
-        app.post('/adapted-pet', async (req, res) => {
+        app.post('/adapted-pet', verifyToken, async (req, res) => {
             const newAdaptedPetData = req.body;
             const result = await adaptedPetCollection.insertOne(newAdaptedPetData);
             res.send(result)
