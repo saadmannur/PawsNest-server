@@ -152,6 +152,11 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/featured-pet', async (req, res) => {
+            const result = await petCollection.find().limit(6).toArray()
+            res.send(result)
+        })
+
 
 
 
